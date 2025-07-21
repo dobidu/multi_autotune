@@ -1,0 +1,3 @@
+### Listar todos os workflows
+GET https://api.music.ai/api/workflow?page=0&size=20
+Authorization: 861ee362-400b-4231-81b8-bcf898d73950
