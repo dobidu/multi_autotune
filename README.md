@@ -6,7 +6,7 @@ A comprehensive, intelligent autotune system that automatically corrects pitch i
 
 ### Core Functionality
 - **MIDI-guided autotune**: Uses MIDI files as pitch reference for precise correction
-- **Multi-library integration**: Supports 8 different pitch-shifting methods across 6 libraries
+- **Multi-library integration**: Supports 9 different pitch-shifting methods across 7 libraries
 - **Intelligent method selection**: Automatically chooses optimal method based on audio analysis
 - **Enhanced autotune engine**: Advanced F0 detection with multiple algorithms and intelligent processing
 - **Robust fallback system**: Automatic failover when methods encounter issues
@@ -19,6 +19,8 @@ A comprehensive, intelligent autotune system that automatically corrects pitch i
 - **Spotify Pedalboard**: Modern audio processing (`pedalboard_shift`)
 - **PyDub**: Fast processing for real-time applications (`pydub_speed`)
 - **SciPy**: Custom implementations for research (`scipy_manual`, `scipy_autotune`)
+- **SoundTouch**: High-quality pitch shifting (`soundtouch_shift`) - requires soundtouch-cli
+- **VST Plugin**: Professional VST integration (`vst_plugin_shift`) - requires pedalboard
 - **Enhanced Engine**: Advanced autotune with robust F0 detection (`enhanced_engine`)
 
 ### Advanced Features
@@ -41,13 +43,16 @@ A comprehensive, intelligent autotune system that automatically corrects pitch i
 pip install librosa soundfile numpy scipy pretty_midi tqdm
 
 # Install optional libraries for better quality
-pip install pyrubberband pedalboard pydub
+pip install pyrubberband pedalboard pydub soundtouch
 
-# For Ubuntu/Debian users (required for pyrubberband)
-sudo apt-get install rubberband-cli
+# For Ubuntu/Debian users (required for pyrubberband and soundtouch)
+sudo apt-get install rubberband-cli soundtouch
 
 # For macOS users
-brew install rubberband
+brew install rubberband soundtouch
+
+# For Windows users
+# Download rubberband and soundtouch binaries from their official websites
 ```
 
 ### Simple Usage
@@ -126,8 +131,11 @@ python multi_autotune_cli.py --validate-setup
 git clone https://github.com/your-username/midi-autotune-system.git
 cd midi-autotune-system
 
-# Run automatic installer
-python install.py
+# Install dependencies
+pip install -r requirements.txt
+
+# Verify installation
+python multi_autotune_cli.py --validate-setup
 ```
 
 ### Method 2: Manual Installation
@@ -137,10 +145,10 @@ python install.py
 pip install -r requirements.txt
 
 # 2. Install system dependencies (Ubuntu/Debian)
-sudo apt-get install build-essential libsndfile1 ffmpeg rubberband-cli
+sudo apt-get install build-essential libsndfile1 ffmpeg rubberband-cli soundtouch
 
 # 3. Install system dependencies (macOS)
-brew install rubberband ffmpeg
+brew install rubberband soundtouch ffmpeg
 
 # 4. Verify installation
 python multi_autotune_cli.py --validate-setup
@@ -160,22 +168,24 @@ source autotune_env/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 
 # Run quick test
-python quick_test.py
+python example_complete.py
 ```
 
 ## 🎛️ Available Methods
 
-| Method | Library | Speed | Quality | Resources | Best Use Cases |
-|--------|---------|-------|---------|-----------|----------------|
-| `auto` | Multi | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Intelligent selection |
-| `enhanced_engine` | Enhanced | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | Advanced F0 detection |
-| `pyrubberband_shift` | PyRubberband | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | Professional production |
-| `pedalboard_shift` | Pedalboard | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Music production |
-| `librosa_hifi` | LibROSA | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | High-quality mastering |
-| `librosa_standard` | LibROSA | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | General purpose |
-| `scipy_autotune` | SciPy | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Intelligent correction |
-| `scipy_manual` | SciPy | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Research/embedded |
-| `pydub_speed` | PyDub | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | Real-time/creative |
+| Method | Library | Speed | Quality | Resources | Best Use Cases | External Deps |
+|--------|---------|-------|---------|-----------|----------------|---------------|
+| `auto` | Multi | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Intelligent selection | - |
+| `enhanced_engine` | Enhanced | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | Advanced F0 detection | - |
+| `pyrubberband_shift` | PyRubberband | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | Professional production | rubberband-cli |
+| `soundtouch_shift` | SoundTouch | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | High-quality processing | soundtouch-cli |
+| `pedalboard_shift` | Pedalboard | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Music production | - |
+| `librosa_hifi` | LibROSA | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | High-quality mastering | - |
+| `librosa_standard` | LibROSA | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | General purpose | - |
+| `scipy_autotune` | SciPy | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Intelligent correction | - |
+| `scipy_manual` | SciPy | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Research/embedded | - |
+| `pydub_speed` | PyDub | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | Real-time/creative | - |
+| `vst_plugin_shift` | VST | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | Professional VST | pedalboard |
 
 ## 🎯 Usage Examples
 
@@ -303,24 +313,24 @@ if 'benchmark_results' in result.quality_metrics:
 ### 7. Advanced Quality Analysis
 
 ```python
-from audio_quality_metrics import quick_autotune_analysis
+from multi_autotune import multi_library_autotune
 import soundfile as sf
 
 # Load original and processed audio
 original, sr = sf.read("vocals.wav")
 processed, _ = sf.read("vocals_autotuned.wav")
 
-# Quick quality analysis
-quality_results = quick_autotune_analysis(
-    original=original,
-    processed=processed,
-    sr=sr,
-    target_pitch=440.0  # A4
+# Process with quality analysis
+result = multi_library_autotune(
+    audio_path="vocals.wav",
+    midi_path="melody.mid",
+    enable_benchmarking=True
 )
 
-print(f"Overall quality score: {quality_results['quality_score']['final_score']:.1f}")
-print(f"Pitch accuracy: {quality_results['pitch_accuracy']:.1f}%")
-print(f"Spectral preservation: {quality_results['spectral_preservation']:.1f}%")
+if result.success:
+    print(f"Overall quality score: {result.quality_metrics.get('quality_score', 0):.1f}")
+    print(f"SNR: {result.quality_metrics.get('snr', 0):.1f} dB")
+    print(f"Correlation: {result.quality_metrics.get('correlation', 0):.1f}")
 ```
 
 ## 💻 Command Line Interface
@@ -407,13 +417,6 @@ The system includes predefined profiles optimized for different use cases:
 
 Create a custom configuration file:
 
-```bash
-# Create configuration template
-python multi_autotune_cli.py config-template --output my_config.json
-```
-
-Example configuration:
-
 ```json
 {
   "audio": {
@@ -460,22 +463,17 @@ The system provides comprehensive quality analysis:
 ### Quality Analysis Tools
 
 ```python
-# Use the advanced quality analyzer
-from audio_quality_metrics import AutotuneQualityAnalyzer
-
-analyzer = AutotuneQualityAnalyzer()
-full_analysis = analyzer.analyze_autotune_quality(
-    original=original_audio,
-    processed=processed_audio,
-    sr=sample_rate,
-    target_pitch=440.0
+# Use the built-in quality analysis
+result = multi_library_autotune(
+    audio_path="vocals.wav",
+    midi_path="melody.mid",
+    enable_benchmarking=True
 )
 
 # Access detailed metrics
-print("Pitch Analysis:", full_analysis['pitch_analysis'])
-print("Spectral Analysis:", full_analysis['spectral_analysis'])
-print("Artifact Detection:", full_analysis['artifact_detection'])
-print("Overall Quality Score:", full_analysis['quality_score'])
+if result.success:
+    print("Quality Metrics:", result.quality_metrics)
+    print("Audio Stats:", result.processed_audio_stats)
 ```
 
 ## 🧪 Testing and Validation
@@ -484,7 +482,7 @@ print("Overall Quality Score:", full_analysis['quality_score'])
 
 ```bash
 # Run quick system test
-python quick_test.py
+python example_complete.py
 ```
 
 ### Complete Example
@@ -499,7 +497,7 @@ python example_complete.py
 ```bash
 # Test enhanced engine specifically
 python enhanced_autotune_engine.py --help
-python enhanced_autotune_engine.py demo_audio.wav demo_melody.mid --method auto
+python enhanced_autotune_engine.py vocal.wav melody.mid --method auto
 ```
 
 ### Validation
@@ -511,8 +509,8 @@ python multi_autotune_cli.py --validate-setup
 # Check all dependencies
 python multi_autotune_cli.py --check-dependencies
 
-# Run comprehensive test suite
-python autotune_tests.py
+# Test SoundTouch specifically
+python test_soundtouch.py
 ```
 
 ## 🛠️ Development
@@ -520,20 +518,14 @@ python autotune_tests.py
 ### Project Structure
 
 ```
-midi-autotune-system/
+multi_autotune/
 ├── multi_autotune.py              # Main system module
 ├── multi_autotune_cli.py          # Command line interface
 ├── enhanced_autotune_engine.py    # Enhanced autotune engine
-├── autotune.py                    # Core autotune implementation
-├── autotune_utils.py              # Utility functions
-├── autotune_tests.py              # Test suite
-├── audio_quality_metrics.py       # Advanced quality analysis
-├── install.py                     # Automatic installer
-├── uninstall.py                   # System uninstaller
-├── quick_test.py                  # Quick testing script
 ├── example_complete.py            # Complete usage example
+├── test_soundtouch.py             # SoundTouch testing
 ├── requirements.txt               # Python dependencies
-├── config.json                   # Default configuration
+├── vst_config.json               # VST configuration
 ├── methods/                      # Pitch shifting implementations
 │   ├── __init__.py
 │   ├── base_shifter.py
@@ -541,26 +533,28 @@ midi-autotune-system/
 │   ├── pyrubberband_shifter.py
 │   ├── pedalboard_shifter.py
 │   ├── pydub_shifter.py
-│   └── scipy_shifters.py
-├── docs/                         # Documentation
-├── tests/                        # Additional tests
+│   ├── scipy_shifters.py
+│   ├── soundtouch_shifter.py
+│   └── vst_plugin_shifter.py
+├── vocal.wav                     # Sample audio file
+├── melody.mid                    # Sample MIDI file
 └── README.md
 ```
 
 ### Running Tests
 
 ```bash
-# Run all tests
-python -m pytest autotune_tests.py -v
-
 # Run quick test
-python quick_test.py
-
-# Run complete example
 python example_complete.py
 
 # Test enhanced engine
 python enhanced_autotune_engine.py --help
+
+# Test SoundTouch
+python test_soundtouch.py
+
+# Validate system
+python multi_autotune_cli.py --validate-setup
 ```
 
 ### Contributing
@@ -568,7 +562,7 @@ python enhanced_autotune_engine.py --help
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature-name`
 3. Make your changes and test thoroughly
-4. Run the test suite: `python autotune_tests.py`
+4. Run the test suite: `python example_complete.py`
 5. Test with enhanced engine: `python enhanced_autotune_engine.py test_audio.wav test_midi.mid`
 6. Submit a pull request
 
@@ -579,39 +573,37 @@ python enhanced_autotune_engine.py --help
 
 ### Core Dependencies
 ```
-librosa>=0.10.0,<0.11.0
-soundfile>=0.12.1,<0.13.0
-numpy>=1.21.0,<1.25.0
-scipy>=1.9.0,<1.12.0
-pretty_midi>=0.2.9,<0.3.0
-tqdm>=4.64.0,<5.0.0
+numpy>=1.21.0
+scipy>=1.9.0
+librosa>=0.10.0
+soundfile>=0.12.1
+pretty_midi>=0.2.9
+tqdm>=4.64.0
 ```
 
 ### Optional Dependencies
 ```
-pyrubberband                    # High-quality pitch shifting
-pedalboard                      # Professional audio processing
-pydub                          # Fast audio processing
-matplotlib>=3.5.0              # Visualizations
-seaborn>=0.11.0                # Statistical plots
-psutil>=5.9.0                  # System monitoring
-pytest>=7.0.0                 # Testing framework
+pydub>=0.25.0                # pydub_speed
+pyrubberband>=0.3.0          # pyrubberband_shift (requires rubberband-cli)
+pedalboard>=0.7.0            # pedalboard_shift, vst_plugin_shift
+soundtouch>=0.3.2            # soundtouch_shift (requires soundtouch-cli)
 ```
 
 ### System Dependencies
 
 **Ubuntu/Debian:**
 ```bash
-sudo apt-get install build-essential libsndfile1 ffmpeg rubberband-cli
+sudo apt-get install build-essential libsndfile1 ffmpeg rubberband-cli soundtouch
 ```
 
 **macOS:**
 ```bash
-brew install rubberband ffmpeg
+brew install rubberband soundtouch ffmpeg
 ```
 
 **Windows:**
 - Download rubberband from: https://breakfastquay.com/rubberband/
+- Download soundtouch from: https://www.surina.net/soundtouch/
 - Install Microsoft Visual C++ Build Tools
 
 ## 🔍 Troubleshooting
@@ -639,7 +631,19 @@ brew install rubberband
 rubberband --help
 ```
 
-#### 3. Enhanced Engine Issues
+#### 3. SoundTouch Not Found
+```bash
+# Ubuntu/Debian
+sudo apt-get install soundtouch
+
+# macOS
+brew install soundtouch
+
+# Verify
+soundstretch --help
+```
+
+#### 4. Enhanced Engine Issues
 ```bash
 # Test enhanced engine specifically
 python enhanced_autotune_engine.py --help
@@ -648,7 +652,7 @@ python enhanced_autotune_engine.py --help
 python -c "from enhanced_autotune_engine import enhanced_autotune; print('Enhanced engine OK')"
 ```
 
-#### 4. Audio File Issues
+#### 5. Audio File Issues
 ```bash
 # Check supported formats
 python multi_autotune_cli.py --help
@@ -656,7 +660,7 @@ python multi_autotune_cli.py --help
 # Supported: WAV, MP3, OGG, FLAC, M4A, AAC
 ```
 
-#### 5. Performance Issues
+#### 6. Performance Issues
 ```bash
 # Use faster methods
 python multi_autotune_cli.py vocals.wav melody.mid --method pydub_speed
@@ -691,7 +695,7 @@ python multi_autotune_cli.py --validate-setup
 
 ### For Production Quality
 - Use `profile="production"`
-- Choose `pyrubberband_shift`, `pedalboard_shift`, or enhanced engine
+- Choose `pyrubberband_shift`, `soundtouch_shift`, or enhanced engine
 - Set `quality_priority` to 0.9 or higher
 - Enable all preprocessing and postprocessing
 
@@ -794,6 +798,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **LibROSA**: Audio analysis and processing
 - **Spotify Pedalboard**: Professional audio effects
 - **Rubber Band**: High-quality pitch shifting
+- **SoundTouch**: Professional audio processing
 - **Pretty MIDI**: MIDI file processing
 - **SciPy/NumPy**: Scientific computing foundations
 - **PyDub**: Simple audio manipulation
@@ -801,7 +806,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 - **Issues**: [GitHub Issues](https://github.com/your-username/midi-autotune-system/issues)
-- **Documentation**: Check the [examples](example_complete.py) and [tests](autotune_tests.py)
+- **Documentation**: Check the [examples](example_complete.py) and [tests](test_soundtouch.py)
 - **System Validation**: Run `python multi_autotune_cli.py --validate-setup`
 - **Enhanced Engine**: Use `python enhanced_autotune_engine.py --help` for advanced features
 
