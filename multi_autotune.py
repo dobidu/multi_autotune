@@ -6,7 +6,7 @@ Multi-Library Autotune System
 Advanced autotune system that integrates multiple pitch shifting libraries,
 allowing dynamic algorithm selection based on automatic analysis or user preference.
 
-Integrates 7 different methods:
+Integrates 9 different methods:
 - pydub_speed: PyDub (fast, low quality)
 - pyrubberband_shift: Rubberband (high quality)
 - librosa_standard: LibROSA standard (balanced)
@@ -14,6 +14,8 @@ Integrates 7 different methods:
 - pedalboard_shift: Spotify Pedalboard (professional)
 - scipy_manual: SciPy manual (educational/research)
 - scipy_autotune: SciPy with complete autotune
+- soundtouch_shifter: SoundTouch (high quality)
+- vst_plugin_shifter: VST Plugin (professional)
 
 Version: 2.0.0
 Author: Multi-Library Autotune System
@@ -73,13 +75,14 @@ METHOD_CATEGORIES = {
 VALID_METHODS = [
     "auto", "pydub_speed", "pyrubberband_shift", 
     "librosa_standard", "librosa_hifi", "pedalboard_shift",
-    "scipy_manual", "scipy_autotune"
+    "scipy_manual", "scipy_autotune", "soundtouch_shift", "vst_plugin_shift"
 ]
 
 # Fallback chains optimized by similarity
 FALLBACK_CHAINS = {
-    "pyrubberband_shift": ["pedalboard_shift", "librosa_hifi", "librosa_standard"],
-    "pedalboard_shift": ["pyrubberband_shift", "librosa_hifi", "librosa_standard"],
+    "pyrubberband_shift": ["soundtouch_shift", "pedalboard_shift", "librosa_hifi"],
+    "soundtouch_shift": ["pyrubberband_shift", "pedalboard_shift", "librosa_hifi"],
+    "pedalboard_shift": ["pyrubberband_shift", "soundtouch_shift", "librosa_hifi"],
     "librosa_hifi": ["librosa_standard", "pedalboard_shift", "scipy_autotune"],
     "librosa_standard": ["librosa_hifi", "scipy_autotune", "scipy_manual"],
     "scipy_autotune": ["librosa_standard", "scipy_manual", "pydub_speed"],
@@ -340,7 +343,13 @@ class LibraryDetector:
         
         # SciPy Autotune
         methods["scipy_autotune"] = LibraryDetector._detect_scipy_autotune()
+
+        # SoundTouch
+        methods["soundtouch_shift"] = LibraryDetector._detect_soundtouch()
         
+        # VST Plugin
+        methods["vst_plugin_shift"] = LibraryDetector._detect_vst_support()
+
         return methods
     
     @staticmethod
@@ -503,6 +512,54 @@ class LibraryDetector:
                 available=False,
                 installation_notes=f"pip install scipy numpy (Error: {e})"
             )
+# Em multi_autotune.py, dentro da classe LibraryDetector
+
+    @staticmethod
+    def _detect_soundtouch() -> MethodInfo:
+        """Detects if the 'soundstretch' command-line tool is available."""
+        
+        def is_tool_available():
+            # Função auxiliar para verificar se o comando existe no PATH
+            for path in os.environ.get("PATH", "").split(os.pathsep):
+                for exe in ["soundstretch", "soundstretch.exe"]:
+                    if (Path(path) / exe).is_file():
+                        return True
+            return False
+
+        available = is_tool_available()
+        
+        return MethodInfo(
+            name="SoundTouch Shifter (CLI)",
+            library_required="soundtouch-cli", # Nome mais descritivo
+            available=available,
+            quality_score=0.9,
+            speed_score=0.8,
+            memory_efficiency=0.9, # Mais eficiente por ser um processo separado
+            best_use_cases=["production", "broadcast", "robust_processing"],
+            limitations=["Requires SoundTouch command-line tools to be in the system's PATH"],
+            installation_notes="Compile and install SoundTouch from source (https://codeberg.org/soundtouch/soundtouch )"
+        )
+
+    
+    @staticmethod
+    def _detect_vst_support() -> MethodInfo:
+        """Detects VST support via Pedalboard."""
+        try:
+            import pedalboard
+            # A disponibilidade real depende de um caminho de VST válido ser fornecido
+            return MethodInfo(
+                name="VST Plugin Shifter",
+                library_required="pedalboard",
+                available=True, # Disponível se pedalboard estiver instalado
+                quality_score=0.95, # Depende do VST
+                speed_score=0.7,  # Depende do VST
+                memory_efficiency=0.7, # Depende do VST
+                best_use_cases=["professional_autotune", "custom_effects"],
+                limitations=["requires valid VST3 path", "quality depends on plugin"],
+                installation_notes="pip install pedalboard"
+            )
+        except ImportError:
+            return MethodInfo(name="VST Plugin Shifter", library_required="pedalboard", available=False, installation_notes="pip install pedalboard")
 
 # ===== PARAMETER VALIDATION =====
 
@@ -793,6 +850,12 @@ class AutoMethodSelector:
                     "condition": lambda ac, ur, sc: ac.harmonic_content > 0.7,
                     "method": "scipy_autotune",
                     "reason": "High harmonic content - intelligent autotune"
+                },
+                                {
+                    "condition": lambda ac, ur, sc: ur.quality_priority > 0.85,
+                    "method": "soundtouch_shift", # Adicionar soundtouch como opção de alta qualidade
+                    "fallback": "pyrubberband_shift",
+                    "reason": "High quality priority, using SoundTouch"
                 }
             ],
             "default": "librosa_standard"
@@ -1140,6 +1203,14 @@ class PitchShiftMethodFactory:
         elif method_name == "scipy_autotune":
             from methods.scipy_shifters import SciPyAutotuneShifter
             return SciPyAutotuneShifter(self.config)
+        
+        elif method_name == "soundtouch_shift":
+            from methods.soundtouch_shifter import SoundTouchShifter
+            return SoundTouchShifter(self.config)
+        
+        elif method_name == "vst_plugin_shift":
+            from methods.vst_plugin_shifter import VSTPluginShifter
+            return VSTPluginShifter(self.config)
         
         else:
             raise ValueError(f"Implementation not found for: {method_name}")

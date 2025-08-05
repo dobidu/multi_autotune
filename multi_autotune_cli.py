@@ -217,6 +217,10 @@ Predefined profiles:
   %(prog)s vocal.wav melody.mid --profile realtime
   %(prog)s vocal.wav melody.mid --profile broadcast
 
+Uso de VST e SoundTouch:
+  %(prog)s vocal.wav melody.mid --method soundtouch_shift
+  %(prog)s vocal.wav melody.mid --method vst_plugin_shift --vst-path /path/to/autotune.vst3
+
 Benchmarking:
   %(prog)s vocal.wav melody.mid --benchmark
   %(prog)s vocal.wav melody.mid --compare-methods pyrubberband_shift,pedalboard_shift
@@ -560,60 +564,77 @@ class MultiAutotuneCLI:
         """Command: run benchmark."""
         print("🏃 Running comparative benchmark...")
         
-        # Initialize processor
         config = self._build_config_from_args(args)
         self.processor = MultiLibraryAutotuneProcessor(config)
         
-        # Run benchmark
-        start_time = time.time()
+        # Obter todos os métodos disponíveis, exceto 'vst_plugin_shift' que requer um caminho específico
+        available_methods = [m for m in self.processor.get_available_methods() if m != 'vst_plugin_shift']
         
-        try:
-            result = multi_library_autotune(
-                audio_path=args.audio_path,
-                midi_path=args.midi_path,
-                force=args.force,
-                enable_benchmarking=True,
-                config=config
-            )
-            
-            if result.success:
-                benchmark_data = result.quality_metrics.get('benchmark_results', {})
-                
-                print(f"\n📊 Benchmark results:")
-                print("=" * 50)
-                
-                # Sort by overall score
-                sorted_methods = sorted(
-                    benchmark_data.items(),
-                    key=lambda x: x[1].get('method_info', 0) if x[1]['success'] else 0,
-                    reverse=True
+        if not available_methods:
+            print("❌ No methods available to benchmark.")
+            return 1
+
+        print(f"🔬 Benchmarking {len(available_methods)} methods: {', '.join(available_methods)}")
+        
+        benchmark_data = {}
+        start_time = time.time()
+
+        for method in available_methods:
+            print(f"\n🔄 Testing {method}...")
+            try:
+                # Chamar a função de processamento para cada método individualmente
+                result = multi_library_autotune(
+                    audio_path=args.audio_path,
+                    midi_path=args.midi_path,
+                    force=args.force,
+                    pitch_shift_method=method, # Especifica o método a ser testado
+                    config=config
                 )
                 
-                for method, data in sorted_methods:
-                    if data['success']:
-                        time_ms = data['processing_time'] * 1000
-                        snr = data['quality_metrics'].get('snr', 0)
-                        score = data['method_info']
-                        
-                        print(f"✅ {method:20} {time_ms:6.1f}ms  SNR:{snr:5.1f}dB  Score:{score:.2f}")
-                    else:
-                        print(f"❌ {method:20} FAILED - {data.get('error', 'Unknown error')}")
-                
-                # Save report if requested
-                if args.benchmark_report:
-                    self._save_benchmark_report(benchmark_data, args.benchmark_report)
-                
-                total_time = time.time() - start_time
-                print(f"\n⏱️  Benchmark completed in {total_time:.1f}s")
-                
-                return 0
+                if result.success:
+                    print(f"   ✅ Success in {result.processing_time:.2f}s")
+                    benchmark_data[method] = {
+                        'success': True,
+                        'processing_time': result.processing_time,
+                        'quality_metrics': result.quality_metrics,
+                        'method_info': self.processor.get_method_info(method).get_overall_score()
+                    }
+                else:
+                    print(f"   ❌ Failed: {result.error_message}")
+                    benchmark_data[method] = {'success': False, 'error': result.error_message}
+
+            except Exception as e:
+                print(f"   ❌ Critical error during benchmark of {method}: {e}")
+                benchmark_data[method] = {'success': False, 'error': str(e)}
+
+        # Relatório final do benchmark
+        print("\n" + "="*50)
+        print("📊 BENCHMARK RESULTS")
+        print("="*50)
+        
+        # Ordenar por pontuação geral (qualidade vs. velocidade)
+        sorted_methods = sorted(
+            benchmark_data.items(),
+            key=lambda item: item[1].get('method_info', 0) if item[1].get('success') else -1,
+            reverse=True
+        )
+        
+        for method, data in sorted_methods:
+            if data['success']:
+                time_ms = data['processing_time'] * 1000
+                snr = data['quality_metrics'].get('snr', 0)
+                score = data.get('method_info', 0)
+                print(f"✅ {method:20} | Time: {time_ms:7.1f}ms | SNR: {snr:5.1f}dB | Score: {score:.2f}")
             else:
-                print(f"❌ Benchmark error: {result.error_message}")
-                return 1
-                
-        except Exception as e:
-            print(f"❌ Benchmark error: {e}")
-            return 1
+                print(f"❌ {method:20} | FAILED: {data.get('error', 'Unknown error')}")
+
+        if args.benchmark_report:
+            self._save_benchmark_report(benchmark_data, args.benchmark_report)
+            
+        total_time = time.time() - start_time
+        print(f"\n⏱️  Benchmark completed in {total_time:.2f}s")
+        
+        return 0
     
     def _cmd_compare_methods(self, args: argparse.Namespace) -> int:
         """Command: compare specific methods."""
@@ -685,8 +706,8 @@ class MultiAutotuneCLI:
                 if isinstance(method, str):
                     method = [method] + fallback_methods
             
-            # Execute processing
-            result = multi_library_autotune(
+            # Só passar vst_plugin_path se o método for vst_plugin_shift (ou estiver na lista)
+            call_args = dict(
                 audio_path=args.audio_path,
                 midi_path=args.midi_path,
                 force=args.force,
@@ -695,6 +716,8 @@ class MultiAutotuneCLI:
                 profile=args.profile,
                 config=config
             )
+            # O caminho do VST é lido automaticamente pelo método VST
+            result = multi_library_autotune(**call_args)
             
             if result.success:
                 print(f"\n✅ Processing completed!")
@@ -706,7 +729,6 @@ class MultiAutotuneCLI:
                     if 'snr' in result.quality_metrics:
                         print(f"   📊 SNR: {result.quality_metrics['snr']:.1f} dB")
                     if 'correlation' in result.quality_metrics:
-# PART 4
                         print(f"   🔗 Correlation: {result.quality_metrics['correlation']:.3f}")
                 if result.fallback_methods_tried:
                     print(f"   🔄 Fallbacks tried: {', '.join(result.fallback_methods_tried)}")

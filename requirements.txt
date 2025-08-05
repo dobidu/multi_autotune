@@ -16,3 +16,6 @@ pretty_midi>=0.2.9
 
 # Interface and utilities
 tqdm>=4.64.0
+
+# SoundTouch
+soundtouch>=0.3.2
