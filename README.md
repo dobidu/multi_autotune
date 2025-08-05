@@ -128,8 +128,8 @@ python multi_autotune_cli.py --validate-setup
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/midi-autotune-system.git
-cd midi-autotune-system
+git clone https://github.com/dobidu/multi_autotune.git
+cd multi_autotune
 
 # Install dependencies
 pip install -r requirements.txt
@@ -805,7 +805,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/your-username/midi-autotune-system/issues)
+- **Issues**: [GitHub Issues]([https://github.com/dobidu/multi_autotune/issues](https://github.com/dobidu/multi_autotune/issues)
 - **Documentation**: Check the [examples](example_complete.py) and [tests](test_soundtouch.py)
 - **System Validation**: Run `python multi_autotune_cli.py --validate-setup`
 - **Enhanced Engine**: Use `python enhanced_autotune_engine.py --help` for advanced features
